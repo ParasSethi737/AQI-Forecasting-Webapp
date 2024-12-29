@@ -4,11 +4,10 @@ API_TEST.rest
 
 .scripts/__pycache__
 scripts/.ipynb_checkpoints
-scripts/corr.py
-scripts/eda.ipynb
-scripts/model_comparision.py
 
 .env
+
+testing/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

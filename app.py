@@ -1,3 +1,4 @@
+import subprocess
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 import pandas as pd
@@ -6,6 +7,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 import logging
+from scripts.forecast import get_forecast_for_last_date
 
 load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
@@ -157,6 +159,12 @@ def get_last_update_date():
     except Exception as e:
         app.logger.error(f"Error retrieving last update date: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/get_forecast', methods=['GET'])
+def get_forecast():
+    """Handles the GET request to fetch the AQI forecast for the last date"""
+    forecast = get_forecast_for_last_date()
+    return jsonify(forecast)
 
 if __name__ == '__main__':
     app.run(debug=True)
