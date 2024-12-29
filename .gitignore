@@ -3,6 +3,10 @@ directory_structure.txt
 API_TEST.rest
 
 .scripts/__pycache__
+scripts/.ipynb_checkpoints
+scripts/corr.py
+scripts/eda.ipynb
+scripts/model_comparision.py
 
 .env
 # Byte-compiled / optimized / DLL files

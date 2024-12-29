@@ -10,25 +10,39 @@
     <h1>Pollutant and Weather Data</h1>
     <button id="fetchButton">Fetch and Update CSV</button>
     <pre id="csvContent"></pre>
+    <p id="error-message"></p>
 
     <script>
-        async function fetchData() {
+        async function getLastUpdateDate() {
+            try {
+                const response = await fetch('/api/last_update_date');
+                const data = await response.json();
+                return data.last_update_date;
+            } catch (error) {
+                console.error('Error fetching last updated date:', error);
+                return null;
+            }
+        }
+
+        async function fetchData(lastUpdatedDate) {
             try {
                 const response = await fetch('/api/get_keys');
                 const keys = await response.json();
-                console.log("Keys:", keys);
 
                 const WEATHER_KEY = keys.WEATHER_KEY;
                 const POLLUTANT_KEY = keys.POLLUTANT_KEY;
-                const STATION = `delhi/mandir-marg`;
+                const STATION = `@10111`; // Station ID for Major dhyan chand stadium, Delhi
+                const FROM = lastUpdatedDate ? new Date(lastUpdatedDate).toISOString().split('T')[0] : '';
+                const TO = new Date().toISOString().split('T')[0];
 
                 const pollutantResponse = await fetch(`https://api.waqi.info/feed/${STATION}/?token=${POLLUTANT_KEY}`, {mode: 'cors'});
                 const pollutantData = await pollutantResponse.json();
 
-                const weatherResponse = await fetch(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/INDIRA%20GANDHI%20INTERNATIONAL%2C%20IN/today?unitGroup=metric&key=${WEATHER_KEY}&contentType=json`, {mode: 'cors'});
+                const weatherResponse = await fetch(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/INDIRA%20GANDHI%20INTERNATIONAL%2C%20IN/${FROM}/${TO}?unitGroup=metric&include=days&key=${WEATHER_KEY}&contentType=json`, {mode: 'cors'});
                 const weatherData = await weatherResponse.json();
 
-                console.log("Pollutant Data:", pollutantData, "Weather Data:", weatherData);
+                console.log('Fetched Pollutant data:', pollutantData);
+                console.log('Fetched Weather data:', weatherData);
 
                 const filteredPollutantData = {
                     pm25: pollutantData.data.iaqi.pm25.v,
@@ -53,19 +67,19 @@
                     visibility: weatherData.days[0].visibility,
                     pressure: weatherData.days[0].pressure
                 };
-                console.log("Filtered Pollutant Data:", filteredPollutantData, "Filtered Weather Data:", filteredWeatherData);
+
                 return { pollutant: filteredPollutantData, weather: filteredWeatherData };
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         }
 
-        async function runPythonScript(data) { // Pass the data to the server
+        async function runPythonScript(data) { 
             try {
                 const response = await fetch('/update_data', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
-                    body: JSON.stringify(data) // Ensure JSON.stringify is used here
+                    body: JSON.stringify(data)
                 });
 
                 if (!response.ok) {
@@ -80,22 +94,22 @@
             }
         }
 
-        async function updateCSV() { // Fetch the data and send it to the server
+        async function updateCSV() { 
             try {
-                const data = await fetchData();  // Fetch the data
+                const lastUpdatedDate = await getLastUpdateDate();  
+                const data = await fetchData(lastUpdatedDate);  
                 if (data) {
-                    console.log("Data being sent to /update_data:", data);  // Log the data
-                    const response = await runPythonScript(data);  // Send data to server
-                    console.log(response.message);  // Log the server response
-                    console.log(response);  
-                    displayCSV();  // Optionally update the frontend with the updated CSV
+                    console.log("Data being sent to /update_data:", data);  
+                    const response = await runPythonScript(data);  
+                    console.log(response.message);  
+                    displayCSV();  
                 }
             } catch (error) {
                 console.error('Error updating CSV:', error);
             }
         }
 
-        function displayCSV() { // Fetch the updated CSV and display it
+        function displayCSV() { 
             fetch('/datasets/cleaned_data.csv')
                 .then(response => response.text())
                 .then(csvData => {

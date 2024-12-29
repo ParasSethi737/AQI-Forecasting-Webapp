@@ -24,7 +24,7 @@ def process_data(data):
 
         # Combine pollutant and weather data into a single dictionary
         combined_data = {
-            'date': datetime.now().strftime('%d-%m-%Y'),
+            'date': datetime.now().strftime('%Y-%m-%d'),
             'pm25': pollutant_data['pm25'].iloc[0],
             'pm10': pollutant_data['pm10'].iloc[0],
             'co': pollutant_data['co'].iloc[0],
@@ -43,11 +43,7 @@ def process_data(data):
             'precip': weather_data['precip'],
             'cloudcover': weather_data['cloudcover'],
             'visibility': weather_data['visibility'],
-            'sealevelpressure': weather_data['pressure'], 
-            'temp_humidity_interaction': None, #engineered features
-            'pm25_cumulative_sum_7': None,
-            'pm25_no2_interaction': None,
-            'pm25_so2_interaction': None,
+            'sealevelpressure': weather_data['pressure']
         }
 
         # Convert combined data to a DataFrame
@@ -72,8 +68,7 @@ def update_csv(combined_data):
                 'date', 'pm25', 'pm10', 'co', 'no2', 'so2', 'o3', 'AQI',
                 'tempmax', 'tempmin', 'temp', 'humidity', 'dew', 'windspeed',
                 'winddir', 'windgust', 'precip', 'cloudcover', 'visibility',
-                'sealevelpressure', 'temp_humidity_interaction',
-                'pm25_cumulative_sum_7', 'pm25_no2_interaction', 'pm25_so2_interaction'
+                'sealevelpressure'
             ]).to_csv(cleaned_data_path, index=False)
 
         # Convert combined_data into DataFrame
@@ -85,13 +80,6 @@ def update_csv(combined_data):
         df_updated = df_updated.drop_duplicates(subset=['date'], keep='last')
 
         df_updated.columns = df_updated.columns.str.strip()
-
-        # Add engineered features in the df_updatedset
-        df_updated['temp_humidity_interaction'] = df_updated['temp'] * df_updated['humidity']
-        df_updated['pm25_cumulative_sum_7'] = df_updated['pm25'].rolling(window=7).sum()
-        df_updated['pm25_no2_interaction'] = df_updated['pm25'] * df_updated['no2']
-        df_updated['pm25_so2_interaction'] = df_updated['pm25'] * df_updated['so2']
-
         df_updated = df_updated.interpolate(method='linear', axis=0)
         df_updated = df_updated.fillna(method='bfill')
 
@@ -150,6 +138,25 @@ def get_csv():
     cleaned_data_path = os.path.join(datasets_dir, "cleaned_data.csv")
     return send_file(cleaned_data_path, as_attachment=True)
 
+@app.route('/api/last_update_date', methods=['GET'])
+def get_last_update_date():
+    try:
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        DATASETS_DIR = os.path.join(BASE_DIR, "datasets")
+        cleaned_data_path = os.path.join(DATASETS_DIR, "cleaned_data.csv")
+
+        # Check if the CSV file exists
+        if os.path.exists(cleaned_data_path):
+            df = pd.read_csv(cleaned_data_path)
+            last_update_date = df['date'].max()  # Get the latest date
+            app.logger.debug(f"Last update date: {last_update_date}")
+            return jsonify({"last_update_date": last_update_date})
+        else:
+            return jsonify({"message": "Data file does not exist"}), 404
+
+    except Exception as e:
+        app.logger.error(f"Error retrieving last update date: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

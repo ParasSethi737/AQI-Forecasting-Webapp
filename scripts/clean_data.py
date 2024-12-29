@@ -16,12 +16,12 @@ data = pd.read_csv(merged_data_path)
 
 # Strip any leading or trailing spaces from the column names
 data.columns = data.columns.str.strip()
-
+""" 
 # Add engineered features in the dataset
 data['temp_humidity_interaction'] = data['temp'] * data['humidity']
 data['pm25_cumulative_sum_7'] = data['pm25'].rolling(window=7).sum()
 data['pm25_no2_interaction'] = data['pm25'] * data['no2']
-data['pm25_so2_interaction'] = data['pm25'] * data['so2']
+data['pm25_so2_interaction'] = data['pm25'] * data['so2'] """
 
 # List of selected features to keep
 selected_features = [
@@ -29,9 +29,7 @@ selected_features = [
     'pm25', 'pm10', 'co', 'no2', 'so2', 'o3', 'AQI',      # Pollutants
     'tempmax', 'tempmin', 'temp', 'humidity', 'dew', 'windspeed', 'winddir', 'windgust',
     'precip', 'cloudcover', 'visibility',                 # Weather
-    'sealevelpressure',                                   # Environmental
-    'temp_humidity_interaction', 'pm25_cumulative_sum_7', # Engineered features
-    'pm25_no2_interaction', 'pm25_so2_interaction'
+    'sealevelpressure'
 ]
 
 # Filter out only the selected features
