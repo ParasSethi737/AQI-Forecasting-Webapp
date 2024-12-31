@@ -1,289 +1,33 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pollutant and Weather Data</title>
-
-    <!-- Include Chart.js -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Internal CSS for styling -->
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7fa;
-            color: #333;
-        }
-
-        header {
-            background-color: #00796b;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 2em;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        #fetchButton {
-            background-color: #00796b;
-            color: white;
-            padding: 15px 30px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        #fetchButton:hover {
-            background-color: #004d40;
-        }
-
-        .error-message {
-            color: #f44336;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        #csvContent {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-family: monospace;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        #forecastChart {
-            margin-top: 50px;
-            width: 100%;
-            max-width: 800px;
-            height: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .footer {
-            background-color: #00796b;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .footer a {
-            color: white;
-            text-decoration: none;
-            margin: 0 10px;
-        }
-    </style>
 </head>
 <body>
 
-    <header>
+    <header class="text-center py-4 bg-primary text-white">
         <h1>Pollutant and Weather Data</h1>
     </header>
 
-    <div class="container">
-        <div class="button-container">
-            <button id="fetchButton">Fetch and Update CSV</button>
+    <div class="container my-5">
+        <div class="text-center mb-4">
+            <button id="fetchButton" class="btn btn-success btn-lg">Fetch and Update CSV</button>
         </div>
-
         <p id="error-message" class="error-message"></p>
-
-        <div id="csvContent"></div>
-
+        <div id="csvContent" class="csv-content"></div>
         <canvas id="forecastChart"></canvas>
     </div>
 
-    <div class="footer">
-        <p>&copy; 2024 AQI Forecasting Webapp | <a href="https://github.com/your-repository" target="_blank">GitHub</a></p>
-    </div>
+    <footer class="footer bg-primary text-white text-center py-3">
+        <p>&copy; 2024 AQI Forecasting Webapp | <a href="https://github.com/your-repository" class="text-white" target="_blank">GitHub</a></p>
+    </footer>
 
-    <script>
-        async function getLastUpdateDate() {
-            try {
-                const response = await fetch('/api/last_update_date');
-                const data = await response.json();
-                return data.last_update_date;
-            } catch (error) {
-                console.error('Error fetching last updated date:', error);
-                return null;
-            }
-        }
-
-        async function fetchData(lastUpdatedDate) {
-            try {
-                const response = await fetch('/api/get_keys');
-                const keys = await response.json();
-
-                const WEATHER_KEY = keys.WEATHER_KEY;
-                const POLLUTANT_KEY = keys.POLLUTANT_KEY;
-                const STATION = `@10111`; // Station ID for Major dhyan chand stadium, Delhi
-                const FROM = lastUpdatedDate ? new Date(lastUpdatedDate).toISOString().split('T')[0] : '';
-                const TO = new Date().toISOString().split('T')[0];
-
-                const pollutantResponse = await fetch(`https://api.waqi.info/feed/${STATION}/?token=${POLLUTANT_KEY}`, {mode: 'cors'});
-                const pollutantData = await pollutantResponse.json();
-
-                const weatherResponse = await fetch(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/INDIRA%20GANDHI%20INTERNATIONAL%2C%20IN/${FROM}/${TO}?unitGroup=metric&include=days&key=${WEATHER_KEY}&contentType=json`, {mode: 'cors'});
-                const weatherData = await weatherResponse.json();
-
-                console.log('Fetched Pollutant data:', pollutantData);
-                console.log('Fetched Weather data:', weatherData);
-
-                const filteredPollutantData = {
-                    pm25: pollutantData.data.iaqi.pm25.v,
-                    pm10: pollutantData.data.iaqi.pm10.v,   
-                    co: pollutantData.data.iaqi.co.v,
-                    no2: pollutantData.data.iaqi.no2.v,
-                    so2: pollutantData.data.iaqi.so2.v,
-                    o3: pollutantData.data.iaqi.o3.v,
-                    AQI: pollutantData.data.aqi
-                };
-                const filteredWeatherData = {
-                    tempmax: weatherData.days[0].tempmax,
-                    tempmin: weatherData.days[0].tempmin,
-                    temp: weatherData.days[0].temp,
-                    humidity: weatherData.days[0].humidity,
-                    dew: weatherData.days[0].dew,
-                    windspeed: weatherData.days[0].windspeed,
-                    winddir: weatherData.days[0].winddir,
-                    windgust: weatherData.days[0].windgust,
-                    precip: weatherData.days[0].precip,
-                    cloudcover: weatherData.days[0].cloudcover,
-                    visibility: weatherData.days[0].visibility,
-                    pressure: weatherData.days[0].pressure
-                };
-
-                return { pollutant: filteredPollutantData, weather: filteredWeatherData };
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-
-        async function sendFetchedDataToServer(data) { 
-            try {
-                const response = await fetch('/update_data', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                return result;
-            } catch (error) {
-                console.error('Error running Python script:', error);
-                document.getElementById('error-message').textContent = `An error occurred: ${error.message}`;
-            }
-        }
-
-        async function updateCSV() { 
-            try {
-                const lastUpdatedDate = await getLastUpdateDate();  
-                const data = await fetchData(lastUpdatedDate);  
-                if (data) {
-                    console.log("Data being sent to /update_data:", data);  
-                    const response = await sendFetchedDataToServer(data);  
-                    console.log(response.message);  
-                    displayCSV();  
-                }
-            } catch (error) {
-                console.error('Error updating CSV:', error);
-            }
-        }
-
-        async function displayCSV() { 
-            fetch('/datasets/cleaned_data.csv')
-                .then(response => response.text())
-                .then(csvData => {
-                    document.getElementById('csvContent').textContent = csvData;
-                })
-                .catch(error => {
-                    console.error('Error fetching CSV:', error);
-                });
-        }
-
-        async function getForecast() {
-            try {
-                const response = await fetch('/get_forecast');
-                const forecastData = await response.json();
-                
-                if (forecastData) {
-                    console.log(forecastData);
-
-                    // Extract days and predictions
-                    const days = Object.keys(forecastData);
-                    const predictions = Object.values(forecastData);
-
-                    // Call function to render the chart
-                    renderForecastChart(days, predictions);
-                }
-            } catch (error) {
-                console.error('Error fetching forecast:', error);
-            }
-        }
-
-        // Render the forecast chart using Chart.js
-        function renderForecastChart(days, predictions) {
-            const ctx = document.getElementById('forecastChart').getContext('2d');
-            
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: days, // X-axis labels (day_1, day_2, ...),
-                    datasets: [{
-                        label: 'Predicted AQI for the next 7 days',
-                        data: predictions, // Y-axis data (predictions)
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            title: {
-                                display: true,
-                                text: 'AQI'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        document.getElementById('fetchButton').addEventListener('click', updateCSV);
-
-        // Call getForecast when the page is loaded
-        window.onload = getForecast;
-    </script>
-
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
