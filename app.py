@@ -56,7 +56,7 @@ def process_data(data):
     except Exception as e:
         app.logger.error(f"Error in process_data: {e}")
         raise
-    
+
 def update_csv(combined_data):
     try:
         BASE_DIR = Path(__file__).resolve().parent
@@ -66,7 +66,7 @@ def update_csv(combined_data):
         weather_data_path = DATASETS_DIR / "weather_data.csv"
         combined_df = pd.DataFrame(combined_data)
 
-        # Ensure 'date' is in the correct datetime format with year-first (YYYY-MM-DD) and remove time
+        # Ensure 'date' is in the correct datetime format with year-first (YYYY-MM-DD)
         combined_df['date'] = pd.to_datetime(combined_df['date']).dt.strftime('%Y-%m-%d')
 
         # Update cleaned_data.csv
@@ -79,18 +79,26 @@ def update_csv(combined_data):
 
         # Update weather_data.csv
         weather_columns = [
-            'datetime', 'tempmax', 'tempmin', 'temp', 'humidity', 'dew',
+            'date', 'tempmax', 'tempmin', 'temp', 'humidity', 'dew',
             'windspeed', 'winddir', 'windgust', 'precip', 'cloudcover',
             'visibility', 'sealevelpressure'
         ]
+
+        # Read the existing weather data
         df_weather = pd.read_csv(weather_data_path)
-        
+
+        # Select relevant weather columns from combined_df
         df_weather_combined = combined_df[weather_columns]
+
+        # Concatenate and update weather data
         df_weather_updated = pd.concat([df_weather, df_weather_combined], ignore_index=True)
-        
-        df_weather_updated = df_weather_updated.drop_duplicates(subset=['datetime'], keep='first')
+
+        # Remove duplicates based on 'date' and handle missing values
+        df_weather_updated = df_weather_updated.drop_duplicates(subset=['date'], keep='first')
         df_weather_updated = df_weather_updated.interpolate(method='linear', axis=0)
         df_weather_updated = df_weather_updated.fillna(method='bfill')
+
+        # Save the updated weather data
         df_weather_updated.to_csv(weather_data_path, index=False)
 
         return {

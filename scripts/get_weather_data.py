@@ -1,35 +1,41 @@
-# Merging weather Data
-
+from pathlib import Path
 import pandas as pd
 
-# Load the weather datasets
-weather_data_2013_12_09_to_2016_09_03 = pd.read_csv('datasets/INDIRA GANDHI INTERNATION... 2013-12-09 to 2016-09-03.csv')
-weather_data_2016_09_04_to_2016_10_16 = pd.read_csv('datasets/INDIRA GANDHI INTERNATION... 2016-09-04 to 2016-10-16.csv')
-weather_data_2016_10_17_to_2019_07_13 = pd.read_csv('datasets/INDIRA GANDHI INTERNATION... 2016-10-17 to 2019-07-13.csv')
-weather_data_2019_07_14_to_2022_04_08 = pd.read_csv('datasets/INDIRA GANDHI INTERNATION... 2019-07-14 to 2022-04-08.csv')
-weather_data_2022_04_09_to_2024_11_20 = pd.read_csv('datasets/INDIRA GANDHI INTERNATION... 2022-04-09 to 2024-11-20.csv')
-weather_data_2024_11_21_to_2024_12_27 = pd.read_csv('datasets/INDIRA GANDHI INTERNATION... 2024-11-21 to 2024-12-27.csv')
+# Define the base directory and datasets directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATASETS_DIR = BASE_DIR / "datasets"
 
-# Combine all weather datasets
-combined_weather_data = pd.concat([
-    weather_data_2013_12_09_to_2016_09_03,
-    weather_data_2016_09_04_to_2016_10_16, 
-    weather_data_2016_10_17_to_2019_07_13,
-    weather_data_2019_07_14_to_2022_04_08,
-    weather_data_2022_04_09_to_2024_11_20,
-    weather_data_2024_11_21_to_2024_12_27
-])
+# Load individual weather datasets
+weather_files = [
+    "INDIRA GANDHI INTERNATION... 2013-12-09 to 2016-09-03.csv",
+    "INDIRA GANDHI INTERNATION... 2016-09-04 to 2016-10-16.csv",
+    "INDIRA GANDHI INTERNATION... 2016-10-17 to 2019-07-13.csv",
+    "INDIRA GANDHI INTERNATION... 2019-07-14 to 2022-04-08.csv",
+    "INDIRA GANDHI INTERNATION... 2022-04-09 to 2024-11-20.csv",
+    "INDIRA GANDHI INTERNATION... 2024-11-21 to 2024-12-27.csv"
+]
 
+# Load and concatenate all weather datasets
+combined_weather_data = pd.concat(
+    [pd.read_csv(DATASETS_DIR / file) for file in weather_files]
+)
 
 # Ensure the 'datetime' column is in datetime format
 combined_weather_data['datetime'] = pd.to_datetime(combined_weather_data['datetime'], format='%Y-%m-%d', errors='coerce')
 
+# Rename 'datetime' to 'date'
+combined_weather_data.rename(columns={'datetime': 'date'}, inplace=True)
+
+# Remove duplicates and sort by 'date'
+combined_weather_data = combined_weather_data.drop_duplicates().sort_values(by='date')
+
 # Interpolate missing values
 combined_weather_data = combined_weather_data.interpolate(method='linear', axis=0)
 
-# Remove duplicates and sort by datetime
-combined_weather_data = combined_weather_data.drop_duplicates().sort_values(by='datetime')
+# Backfill remaining missing values
+combined_weather_data = combined_weather_data.fillna(method='bfill')
 
-combined_weather_data.to_csv('datasets/weather_data.csv', index=False)
+# Save the combined data to CSV
+combined_weather_data.to_csv(DATASETS_DIR / 'weather_data.csv', index=False)
 
-print("Combined weather data saved to 'datasets/weather_data.csv'")
+print(f"Combined weather data saved to '{DATASETS_DIR / 'weather_data.csv'}'")

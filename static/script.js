@@ -20,7 +20,8 @@ async function fetchData(lastUpdatedDate) {
         const WEATHER_KEY = keys.WEATHER_KEY;
         const POLLUTANT_KEY = keys.POLLUTANT_KEY;
         const STATION = '@10124';
-        const FROM = lastUpdatedDate ? new Date(lastUpdatedDate).toISOString().split('T')[0] : ''; //only accepts date in YYYY-MM-DD format
+        const FROM = '2024-12-27'; //only accepts date in YYYY-MM-DD format
+        //const FROM = lastUpdatedDate ? new Date(lastUpdatedDate).toISOString().split('T')[0] : ''; //only accepts date in YYYY-MM-DD format
         const IST_OFFSET = 5.5; // India Standard Time (IST) UTC offset (UTC+5:30)
         const TO_raw = new Date().toLocaleString("en-US", { timeZone: `Asia/Kolkata` }).split('T')[0];
         const TO = new Date(TO_raw).toISOString().split('T')[0];
