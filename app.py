@@ -72,7 +72,7 @@ def update_csv(combined_data):
         # Update cleaned_data.csv
         df_cleaned = pd.read_csv(cleaned_data_path)
         df_cleaned_updated = pd.concat([df_cleaned, combined_df], ignore_index=True)
-        df_cleaned_updated = df_cleaned_updated.drop_duplicates(subset=['date'], keep='first')
+        df_cleaned_updated = df_cleaned_updated.drop_duplicates(subset=['date'], keep='last')
         df_cleaned_updated = df_cleaned_updated.interpolate(method='linear', axis=0)
         df_cleaned_updated = df_cleaned_updated.fillna(method='bfill')
         df_cleaned_updated.to_csv(cleaned_data_path, index=False)

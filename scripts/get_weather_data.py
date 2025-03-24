@@ -1,9 +1,12 @@
+# Only required if weather data needs to be merged from csv, else use app.py's update csv function
+# This script will combine all weather datasets into a single CSV file and save it to the datasets directory.
 from pathlib import Path
 import pandas as pd
 
 # Define the base directory and datasets directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATASETS_DIR = BASE_DIR / "datasets"
+RAW_DATASETS_DIR = BASE_DIR / "raw_data"
 
 # Load individual weather datasets
 weather_files = [
@@ -17,7 +20,7 @@ weather_files = [
 
 # Load and concatenate all weather datasets
 combined_weather_data = pd.concat(
-    [pd.read_csv(DATASETS_DIR / file) for file in weather_files]
+    [pd.read_csv(RAW_DATASETS_DIR / file) for file in weather_files]
 )
 
 # Ensure the 'datetime' column is in datetime format
@@ -36,6 +39,6 @@ combined_weather_data = combined_weather_data.interpolate(method='linear', axis=
 combined_weather_data = combined_weather_data.fillna(method='bfill')
 
 # Save the combined data to CSV
-combined_weather_data.to_csv(DATASETS_DIR / 'weather_data.csv', index=False)
+combined_weather_data.to_csv(DATASETS_DIR/ 'weather_data.csv', index=False)
 
 print(f"Combined weather data saved to '{DATASETS_DIR / 'weather_data.csv'}'")

@@ -3,10 +3,11 @@ import pandas as pd
 import joblib
 from .train_model import load_data, engineer_additional_features, create_lag_features
 from pathlib import Path
+from datetime import datetime, timedelta
 
 # Path to the saved model
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATASETS_DIR = BASE_DIR / "models"
+DATASETS_DIR = BASE_DIR / "ML_models"
 MODEL_PATH = DATASETS_DIR / "xgboost_model.pkl"
 
 def get_forecast_for_last_date():
@@ -40,8 +41,10 @@ def get_forecast_for_last_date():
     if len(predictions) != 7:
         raise ValueError(f"Prediction output has unexpected shape. Expected 7 elements, but got {len(predictions)}")
 
-    # Return predictions as a dictionary with day_1 to day_7
-    forecast = {f"day_{i+1}": round(predictions[i]) for i in range(7)}
+    start_date = datetime.today()  # Or replace with a specific start date
+    forecast = {
+    (start_date + timedelta(days=i+1)).strftime('%Y-%m-%d'): round(predictions[i]) for i in range(7)
+    }
 
     return forecast
 

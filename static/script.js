@@ -19,10 +19,8 @@ async function fetchData(lastUpdatedDate) {
 
         const WEATHER_KEY = keys.WEATHER_KEY;
         const POLLUTANT_KEY = keys.POLLUTANT_KEY;
-        const STATION = '@10124';
-        const FROM = '2024-12-27'; //only accepts date in YYYY-MM-DD format
-        //const FROM = lastUpdatedDate ? new Date(lastUpdatedDate).toISOString().split('T')[0] : ''; //only accepts date in YYYY-MM-DD format
-        const IST_OFFSET = 5.5; // India Standard Time (IST) UTC offset (UTC+5:30)
+        const STATION = '@10124'; //only accepts date in YYYY-MM-DD format
+        const FROM = lastUpdatedDate ? new Date(lastUpdatedDate).toISOString().split('T')[0] : ''; //only accepts date in YYYY-MM-DD format
         const TO_raw = new Date().toLocaleString("en-US", { timeZone: `Asia/Kolkata` }).split('T')[0];
         const TO = new Date(TO_raw).toISOString().split('T')[0];
         console.log('FROM:', FROM, 'TO:', TO);
@@ -98,30 +96,41 @@ async function sendFetchedDataToServer(data) {
 }
 
 async function updateCSV() {
-    try {
-        console.log('Starting CSV update...');
-        const lastUpdatedDate = await getLastUpdateDate();
-        console.log('Last updated date:', lastUpdatedDate);
-
-        const data = await fetchData(lastUpdatedDate);
-        console.log('Fetched data:', data);
-
-        if (data) {
-            const response = await sendFetchedDataToServer(data);
-            console.log('Data sent to server successfully:', response);
-            displayCSV();
-        }
-    } catch (error) {
-        console.error('Error updating CSV:', error);
+    const lastUpdatedDate = await getLastUpdateDate();
+    const data = await fetchData(lastUpdatedDate);
+    if (data.length > 0) {
+        await sendFetchedDataToServer(data);
+        displayCSV();
+        getForecast();
+    } else {
+        console.error('No data fetched.');
     }
 }
 
+document.getElementById('viewCsvButton').addEventListener('click', async () => {
+    console.log("View CSV button clicked! Fetching CSV...");
+    await displayCSV(); // Fetch and display CSV data
+
+    // Manually show the modal (in case Bootstrap's auto-trigger fails)
+    const csvModal = new bootstrap.Modal(document.getElementById('csvModal'));
+    csvModal.show();
+});
+
 async function displayCSV() {
     try {
-        console.log('Fetching cleaned_data.csv...');
         const response = await fetch('/datasets/cleaned_data.csv');
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
         const csvData = await response.text();
-        document.getElementById('csvContent').textContent = csvData;
+        console.log('Fetched CSV Data:', csvData);
+
+        const csvContainer = document.getElementById('csvModalContent');
+        if (!csvContainer) {
+            console.error("Element 'csvModalContent' not found!");
+            return;
+        }
+
+        csvContainer.textContent = csvData; // Display raw CSV
     } catch (error) {
         console.error('Error fetching CSV:', error);
     }
@@ -144,29 +153,108 @@ async function getForecast() {
         console.error('Error fetching forecast:', error);
     }
 }
+document.addEventListener("DOMContentLoaded", async () => {
+    // Fetch weather and pollutant data and update UI
+    const lastUpdatedDate = await getLastUpdateDate();
+    const fetchedData = await fetchData(lastUpdatedDate);
+    if (fetchedData) {
+        displayFetchedData(fetchedData);
+        const response = await sendFetchedDataToServer(fetchedData);
+        if (response) {
+            console.log('CSV updated successfully.');
+            getForecast(); // Fetch and display forecast after CSV update
+        }
+    }
+});
 
-function renderForecastChart(days, predictions) {
-    console.log('Rendering chart with days:', days, 'and predictions:', predictions);
+async function displayFetchedData(data) {
+    const dataDisplay = document.getElementById("dataDisplay");
+    dataDisplay.innerHTML = "";
+
+    data.forEach(entry => {
+        const { date, pollutant, weather } = entry;
+        const currentDateTime = new Date(date).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+        const card = document.createElement("div");
+        card.className = "col-md-4 mb-4 d-flex align-items-stretch";
+        card.innerHTML = `
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <strong>${currentDateTime}</strong>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5>Pollutant Data</h5>
+                    <ul>
+                        <li><i class="fas fa-smog"></i> AQI: ${pollutant.AQI || "N/A"}</li>
+                        <li><i class="fas fa-cloud-sun-rain"></i> PM2.5: ${pollutant.pm25 || "N/A"}</li>
+                        <li><i class="fas fa-cloud-sun-rain"></i> PM10: ${pollutant.pm10 || "N/A"}</li>
+                        <li><i class="fas fa-burn"></i> CO: ${pollutant.co || "N/A"}</li>
+                        <li><i class="fas fa-skull-crossbones"></i> NO2: ${pollutant.no2 || "N/A"}</li>
+                        <li><i class="fas fa-sun"></i> SO2: ${pollutant.so2 || "N/A"}</li>
+                        <li><i class="fas fa-cloud-moon"></i> O3: ${pollutant.o3 || "N/A"}</li>
+                    </ul>
+                    <h5>Weather Data</h5>
+                    <ul>
+                        <li><i class="fas fa-temperature-high"></i> Max Temp: ${weather.tempmax || "N/A"}°C</li>
+                        <li><i class="fas fa-temperature-low"></i> Min Temp: ${weather.tempmin || "N/A"}°C</li>
+                        <li><i class="fas fa-thermometer"></i> Temp: ${weather.temp || "N/A"}°C</li>
+                        <li><i class="fas fa-tint"></i> Humidity: ${weather.humidity || "N/A"}%</li>
+                        <li><i class="fas fa-cloud-showers-heavy"></i> Dew: ${weather.dew || "N/A"}°C</li>
+                        <li><i class="fas fa-wind"></i> Wind Speed: ${weather.windspeed || "N/A"} km/h</li>
+                        <li><i class="fas fa-compass"></i> Wind Direction: ${weather.winddir || "N/A"}</li>
+                        <li><i class="fas fa-fan"></i> Wind Gust: ${weather.windgust || "N/A"} km/h</li>
+                        <li><i class="fas fa-cloud-rain"></i> Precipitation: ${weather.precip || "N/A"} mm</li>
+                        <li><i class="fas fa-cloud"></i> Cloud Cover: ${weather.cloudcover || "N/A"}%</li>
+                        <li><i class="fas fa-eye"></i> Visibility: ${weather.visibility || "N/A"} km</li>
+                        <li><i class="fas fa-tachometer-alt"></i> Pressure: ${weather.pressure || "N/A"} hPa</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        dataDisplay.appendChild(card);
+    });
+}
+
+let forecastChartInstance = null;
+
+function renderForecastChart(dates, predictions) {
     const ctx = document.getElementById('forecastChart').getContext('2d');
-    new Chart(ctx, {
+
+    // Destroy existing chart if it exists
+    if (forecastChartInstance) {
+        forecastChartInstance.destroy();
+    }
+
+    // Create new chart instance and assign it to the global variable
+    forecastChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: days,
+            labels: dates,
             datasets: [{
-                label: 'Predicted AQI for the next 7 days',
+                label: 'Predicted AQI',
                 data: predictions,
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                tension: 0.1,
+                tension: 0.4,
             }],
         },
         options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: { enabled: true },
+            },
             scales: {
-                y: { beginAtZero: false, title: { display: true, text: 'AQI' } },
+                x: { title: { display: true, text: 'Date' } },
+                y: { title: { display: true, text: 'AQI' }, beginAtZero: false },
             },
         },
     });
 }
 
+document.addEventListener("DOMContentLoaded", updateCSV);
+
 document.getElementById('fetchButton').addEventListener('click', updateCSV);
+document.getElementById('viewCsvButton').addEventListener('click', displayCSV);
+
 window.onload = getForecast;

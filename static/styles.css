@@ -6,6 +6,30 @@ body {
     color: #333;
 }
 
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#forecastChartContainer {
+    margin-top: 20px;
+}
+
+
+header {
+    background-color: #343a40;
+    color: white;
+}
+
+#forecastChart {
+    margin-top: 50px;
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .csv-content {
     background-color: #fff;
     padding: 20px;
@@ -17,16 +41,21 @@ body {
 }
 
 .error-message {
-    color: #f44336;
+    color: #dc3545;
     text-align: center;
     font-size: 16px;
+    margin-top: 10px;
+    font-weight: bold;
 }
 
-#forecastChart {
-    margin-top: 50px;
-    width: 100%;
-    max-width: 800px;
-    height: 400px;
-    margin-left: auto;
-    margin-right: auto;
+#loading .spinner-border {
+    margin-top: 20px;
+}
+
+button.btn {
+    transition: transform 0.3s ease;
+}
+
+button.btn:hover {
+    transform: scale(1.05);
 }

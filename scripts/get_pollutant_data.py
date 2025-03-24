@@ -41,7 +41,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATASETS_DIR = BASE_DIR / "datasets"
 
 # Path for the pollutants data file
-pollutants_data_path = DATASETS_DIR / "mandir-marg, delhi-air-quality.csv"
+RAW_DATASETS_DIR = DATASETS_DIR / "raw_data"
+pollutants_data_path = RAW_DATASETS_DIR / "mandir-marg, delhi-air-quality.csv"
 
 # Load your pollutants data
 pollutant_data = pd.read_csv(pollutants_data_path)
@@ -82,7 +83,16 @@ pollutant_data['AQI_co'] = pollutant_data['AQI_co'].astype(float)
 # Now calculate the overall AQI (maximum of all the pollutants)
 pollutant_data['AQI'] = pollutant_data[['AQI_pm25', 'AQI_pm10', 'AQI_o3', 'AQI_no2', 'AQI_so2', 'AQI_co']].max(axis=1)
 
-# Save the updated dataframe with AQI to a CSV file
-pollutant_data.to_csv(DATASETS_DIR / "pollutants_data.csv", index=False)
+# Convert 'date' column to datetime format, auto-detect format
+pollutant_data['date'] = pd.to_datetime(pollutant_data['date'], errors='coerce')
 
-print("Pollutants AQI values calculated and saved to 'datasets/pollutants_data.csv'")
+# Sort by date in ascending order (oldest first, latest at the bottom)
+pollutant_data = pollutant_data.sort_values(by='date', ascending=True)
+
+# Format date as 'YYYY-MM-DD' before saving
+pollutant_data['date'] = pollutant_data['date'].dt.strftime('%Y-%m-%d')
+
+# Save the updated dataframe with AQI to a CSV file
+pollutant_data.to_csv(DATASETS_DIR / "pollutant_data.csv", index=False) #changed from pollutants to pollutant
+
+print("Pollutants AQI values calculated and saved to 'datasets/pollutant_data.csv'")
