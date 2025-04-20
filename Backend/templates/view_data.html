@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Viewing {{ table }} Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 1rem;
+        }
+        select {
+            margin-bottom: 1rem;
+            padding: 6px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #eee;
+        }
+    </style>
+    <script>
+        function changeTable(selectObj) {
+            const selected = selectObj.value;
+            window.location.href = `/view-data/${selected}`;
+        }
+    </script>
+</head>
+<body>
+    <h2>Viewing Table: {{ table }}</h2>
+
+    <label for="tableSelect">Switch table: </label>
+    <select id="tableSelect" onchange="changeTable(this)">
+        {% for t in tables %}
+            <option value="{{ t }}" {% if t == table %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+    </select>
+
+    <table>
+        <thead>
+            <tr>
+                {% for col in columns %}
+                    <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% for value in row %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
