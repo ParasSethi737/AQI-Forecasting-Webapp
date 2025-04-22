@@ -3,7 +3,9 @@
 
     # Prevent Python from writing .pyc files and buffering stdout/stderr
     ENV PYTHONDONTWRITEBYTECODE=1 \
-        PYTHONUNBUFFERED=1
+        PYTHONUNBUFFERED=1 \
+        PYTHONPATH=/app/scripts:$PYTHONPATH
+
     
     WORKDIR /app
     

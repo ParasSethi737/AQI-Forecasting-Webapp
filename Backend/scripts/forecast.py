@@ -4,7 +4,7 @@ import joblib
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
-from train_model import load_data, engineer_additional_features, create_lag_features
+from .train_model import load_data, engineer_additional_features, create_lag_features
 
 """ BASE_DIR = Path(__file__).resolve().parent.parent
 DATASETS_DIR = BASE_DIR / "ML_models"
