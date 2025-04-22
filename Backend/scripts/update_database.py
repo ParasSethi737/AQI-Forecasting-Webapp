@@ -156,6 +156,7 @@ def append_aqi_forecast_to_db(forecast):
 
 def load_and_merge_data_from_csv():
     # Adjust the path to the datasets folder
+    datasets_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'datasets')
     # Set the path to the SQLite database in persistent storage
     DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
     

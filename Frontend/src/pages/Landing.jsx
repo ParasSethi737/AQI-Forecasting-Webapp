@@ -93,7 +93,7 @@ function LandingPage() {
                         <li><strong>Pollutant Data:</strong> Sourced from the <a href="https://waqi.info" target="_blank" rel="noopener noreferrer">World Air Quality Index (WAQI)</a></li>
                         <li><strong>Weather Data:</strong> Pulled via <a href="https://www.visualcrossing.com/" target="_blank" rel="noopener noreferrer">Visual Crossing API</a></li>
                         <li><strong>Pipeline:</strong> Hourly data fetch → Cleaning → Feature Engineering → DB Storage</li>
-                        <li><strong>Forecast Generation:</strong> Hourly retraining → Prediction → API push to UI</li>
+                        <li><strong>Forecast Generation:</strong> Daily retraining → Prediction → API push to UI</li>
                     </ul>
                 </section>
 

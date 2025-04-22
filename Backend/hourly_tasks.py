@@ -1,11 +1,11 @@
-# tasks.py
+# hourly_tasks.py
 
+from datetime import datetime
+from scripts.forecast import get_aqi_forecast
 from scripts.fetch_data import fetch_data_from_apis
 from scripts.update_database import update_database, append_aqi_forecast_to_db
-from scripts.forecast import get_aqi_forecast
-from datetime import datetime
 
-def run_scheduled_tasks():
+def run_hourly_tasks():
     # Fetch data from APIs and update the database`
     weather_df, pollutant_df = fetch_data_from_apis()
     update_database(weather_df, pollutant_df)
@@ -15,5 +15,5 @@ def run_scheduled_tasks():
     append_aqi_forecast_to_db(forecast)
 
 if __name__ == "__main__":
-    run_scheduled_tasks()
-    print("Scheduled tasks completed at:", datetime.now())
+    run_hourly_tasks()
+    print("Hourly tasks completed at:", datetime.now())
