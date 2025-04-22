@@ -1,21 +1,13 @@
 #app.py
 
-from flask import Flask, request, jsonify, send_file, render_template, send_from_directory
-from flask_cors import CORS
-import pandas as pd
-import json
-from datetime import datetime
-import os
-from dotenv import load_dotenv
-import logging
-from scripts.forecast import get_aqi_forecast
-from pathlib import Path 
-
-from scripts.update_database import get_last_update_date_from_db, update_database,  append_aqi_forecast_to_db
 import sqlite3
-from flask import Response
+import logging
+import numpy as np
+import pandas as pd
+from flask_cors import CORS
+from dotenv import load_dotenv
+from flask import Flask, request, jsonify, send_from_directory
 from scripts.fetch_data import fetch_data_from_apis
-from flask import render_template
 
 
 load_dotenv()
@@ -26,31 +18,46 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Routes
 @app.route('/')
-def home():
-    return render_template('index.html')
+def serve_react_app():
+    return send_from_directory('../Frontend/dist', 'index.html')
 
-@app.route('/api/get_keys', methods=['GET'])
-def get_keys():
-    pollutant_key = os.getenv("POLLUTANT_KEY")
-    weather_key = os.getenv("WEATHER_KEY")
-    keys = {"POLLUTANT_KEY": pollutant_key, "WEATHER_KEY": weather_key}
-    app.logger.debug(f"API Keys: {keys}")
-    app.logger.debug(f"Access-Control-Allow-Origin: {request.environ.get('HTTP_ORIGIN')}")
-    return jsonify(keys)
-
-@app.route('/api/last_update_date', methods=['GET'])
-def get_last_update_date():
+@app.route('/api/get_evaluation_metrics', methods=['GET'])
+def get_evaluation_metrics():
     try:
-        last_update_date = get_last_update_date_from_db()
-        if last_update_date:
-            app.logger.debug(f"Last update date from DB: {last_update_date}")
-            return jsonify({"last_update_date": last_update_date})
-        else:
-            return jsonify({"message": "No update date found"}), 404
+        # Connect to the SQLite database using context manager
+        with sqlite3.connect('aqi_forecast.db') as conn:
+            # Query to get the evaluation metrics
+            query = """
+                SELECT * FROM ModelEvaluation
+                ORDER BY timestamp DESC
+                LIMIT 1
+            """
+            df = pd.read_sql_query(query, conn)
+
+        # If the dataframe is empty, return a message indicating no metrics
+        if df.empty:
+            return jsonify({"message": "No evaluation metrics available yet."}), 404
+
+        # Normalize column names in the DataFrame (strip and lower case)
+        df.columns = df.columns.str.strip().str.lower()
+
+        # Convert the 'date' column to a readable format (if exists)
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        # Replace NaN values with None for valid JSON response
+        df = df.replace({np.nan: None})
+
+        # Return the evaluation metrics as a JSON response
+        return jsonify({
+            "data": df.to_dict(orient='records')
+        })
 
     except Exception as e:
-        app.logger.error(f"Error retrieving last update date: {e}")
-        return jsonify({"error": str(e)}), 500
+        # Log the error with the exception details
+        app.logger.error(f"Error fetching evaluation metrics: {str(e)}")
+        return jsonify({"error": "Internal Server Error, please try again later."}), 500
+
 
 @app.route('/api/fetch_current_data', methods=['GET'])
 def fetch_current_data():
@@ -60,8 +67,6 @@ def fetch_current_data():
 
         # Check if both are valid DataFrames
         if isinstance(weather_df, pd.DataFrame) and isinstance(pollutant_df, pd.DataFrame):
-            # Update database with averaged data for today's date
-            update_database(weather_df, pollutant_df)
 
             response_data = {
                 "weather_data": weather_df.to_dict(orient='records'),
@@ -79,10 +84,30 @@ def fetch_current_data():
 @app.route('/api/get_forecast', methods=['GET'])
 def get_forecast():
     try:
-        forecast = get_aqi_forecast()
-        append_aqi_forecast_to_db(forecast)  
-        print(f"Forecast data: {forecast}")
-        return jsonify(forecast)
+        conn = sqlite3.connect('aqi_forecast.db')
+        
+        # Step 1: Get the latest forecast_date
+        latest_forecast_date_query = """
+            SELECT MAX(forecast_date) as latest_forecast_date FROM AQIForecast
+        """
+        latest_date_df = pd.read_sql_query(latest_forecast_date_query, conn)
+        latest_forecast_date = latest_date_df["latest_forecast_date"].iloc[0]
+
+        # Step 2: Fetch all rows with that forecast_date
+        forecast_query = f"""
+            SELECT * FROM AQIForecast
+            WHERE forecast_date = '{latest_forecast_date}'
+            ORDER BY predicted_date ASC
+        """
+        forecast_df = pd.read_sql_query(forecast_query, conn)
+        conn.close()
+
+        if forecast_df.empty:
+            return jsonify({"message": "No forecast available yet."}), 404
+
+        forecast_df = forecast_df.replace({np.nan: None})
+        return jsonify(forecast_df.to_dict(orient='records'))
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -143,6 +168,9 @@ def view_data(table_name):
 
         # Reorder the DataFrame columns
         df = df[existing_columns]
+
+        # Replace NaN with None to ensure valid JSON
+        df = df.replace({np.nan: None})
 
         # Convert DataFrame to JSON
         data = df.to_dict(orient='records')

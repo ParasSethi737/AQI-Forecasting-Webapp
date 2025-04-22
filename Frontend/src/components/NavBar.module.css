@@ -20,12 +20,14 @@
   
 /* Logo styles */
 .logo {
-    font-size: 0.75rem;
+    font-size: 0.6rem;
     font-weight: bold;
     cursor: pointer;
     color: #facc15;
     display: inline-block;
     transition: transform 0.3s ease, color 0.3s ease; 
+    display: flex;
+    flex-direction: row;
   }
   
   .logo:hover {
@@ -64,4 +66,12 @@ margin-left: auto;
     .navLinks li a:active {
         transform: scale(0.95);
     }
-  
+
+/* Favicon styles */
+.favicon {
+  width: 3.5rem; /* Increase the size */
+  height: 3.5rem; /* Increase the size */
+  margin-right: 1rem;
+  display: block; /* Ensure it aligns properly */
+  margin-top: 1rem;
+}

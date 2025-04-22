@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
-import './history.css'; // Import the CSS file
+import './History.css'; // Import the CSS file
 
 function History() {
   const [data, setData] = useState([]);

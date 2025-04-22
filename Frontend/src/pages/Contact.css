@@ -1,0 +1,25 @@
+/* Contact.css */
+
+.contact-container {
+    font-size: 1.2rem;
+    color: #334b71;
+    margin: 20px;
+    line-height: 1.6;
+}
+
+.contact-paragraph {
+    margin: 10px 0;
+}
+
+.contact-link {
+    color: #1e90ff;
+    text-decoration: none;
+}
+
+.contact-link:hover {
+    text-decoration: underline;
+}
+
+a:hover {
+    color: #1e90ff;
+}

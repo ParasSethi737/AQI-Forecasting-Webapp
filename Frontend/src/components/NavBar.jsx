@@ -6,6 +6,11 @@ function NavBar() {
   return (
     <nav className={styles.nav}>
       <Link to="/" className={styles.logo}>
+        <img
+          src="/favicon.png"
+          alt="AQI Logo"
+          className={styles.favicon}
+        />
         <h1>AQI Forecasting Webapp</h1>
       </Link>
       <ul className={styles.navLinks}>

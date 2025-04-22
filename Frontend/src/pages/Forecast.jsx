@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import './forecast.css';
+import './Forecast.css';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
@@ -38,9 +38,11 @@ function Forecast() {
   if (loading) return <div className="loading">Loading forecast...</div>;
   if (error || !forecastData) return <div className="error">Could not load forecast data.</div>;
 
-  const labels = Object.keys(forecastData);
-  const values = Object.values(forecastData);
+  // Extract labels and values from the forecastData array
+  const labels = forecastData.map((item) => item.predicted_date); // Date for x-axis
+  const values = forecastData.map((item) => item.predicted_aqi); // AQI values for y-axis
 
+  // Chart data setup
   const chartData = {
     labels: labels,
     datasets: [
@@ -57,6 +59,7 @@ function Forecast() {
     ],
   };
 
+  // Chart options
   const options = {
     responsive: true,
     maintainAspectRatio: false,

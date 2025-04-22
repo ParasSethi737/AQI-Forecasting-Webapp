@@ -96,6 +96,19 @@ def train_model():
 
     print(f"XGBoost - MAE: {mae:.4f}, R²: {r2:.4f}, RMSE: {rmse:.4f}, MAPE: {mape:.4f}")
 
+    # Save the evaluation metrics to the database
+    BASE_DIR = Path(__file__).resolve().parent.parent  # Root directory
+    DB_PATH = BASE_DIR / "aqi_forecast.db"
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO ModelEvaluation (timestamp, mae, r2, rmse, mape)
+        VALUES (?, ?, ?, ?, ?)
+    """, (pd.Timestamp.now().isoformat(), mae, r2, rmse, mape))
+    conn.commit()
+    conn.close()
+
     # Save the trained model
     model_path = r'C:\Codes\WebDev\AQI-Forecasting-Webapp\Backend\ML_models\xgboost_model.pkl'
     joblib.dump(xgb_model, model_path)

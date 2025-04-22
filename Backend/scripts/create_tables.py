@@ -3,8 +3,11 @@
 import os
 import sqlite3
 
+# Get the current working directory
 print("Current working directory:", os.getcwd())
-db_path = os.path.abspath("aqi_forecast.db")
+
+# Absolute path for the database file in the parent directory
+db_path = os.path.join(os.path.dirname(os.getcwd()), "aqi_forecast.db")
 print("Database will be created at:", db_path)
 
 conn = sqlite3.connect(db_path)
@@ -86,6 +89,18 @@ CREATE TABLE IF NOT EXISTS PollutantData (
     AQI_so2 REAL,
     AQI_co REAL,
     AQI REAL
+);
+''')
+
+# Create the ModelEvaluation table
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS ModelEvaluation (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT,
+    mae REAL,
+    r2 REAL,
+    rmse REAL,
+    mape REAL
 );
 ''')
 

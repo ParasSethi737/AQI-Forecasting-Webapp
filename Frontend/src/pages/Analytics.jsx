@@ -1,12 +1,14 @@
-// src/pages/Analytics.jsx
 import React from 'react';
+import './Analytics.css';
 
 function Analytics() {
   return (
-    <div>
-      <h2>Analytics Page</h2>
-      <p>Coming Soon!</p>
-      <p>This page will show machine learning model analysis and predictions.</p>
+    <div className="analytics-container">
+      <h2 className="analytics-title">Analytics Dashboard</h2>
+      <p className="analytics-coming-soon">Coming Soon!</p>
+      <p className="analytics-description">
+        This page will show Data Analytics and Visualization for the data.
+      </p>
     </div>
   );
 }

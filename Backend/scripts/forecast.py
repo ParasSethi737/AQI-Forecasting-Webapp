@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 import joblib
-from .train_model import train_model, load_data, engineer_additional_features, create_lag_features
+from train_model import train_model, load_data, engineer_additional_features, create_lag_features
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -14,6 +14,7 @@ MODEL_PATH = DATASETS_DIR / "xgboost_model.pkl"
 def get_aqi_forecast():
     """Generates a forecast for the next 7 days using the latest data"""
     train_model()
+    print("Model training completed.")
     
     data = load_data()
     data = engineer_additional_features(data)
