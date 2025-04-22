@@ -1,0 +1,12 @@
+/* Analytics.css */
+
+.analytics-coming-soon, .analytics-description {
+    font-size: 1.2rem;
+    color: #334b71;
+    margin: 20px 0;
+}
+
+.analytics-coming-soon {
+    font-weight: bold;
+    text-align: center;
+}

@@ -1,0 +1,37 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+aqi_backend_venv/
+
+# Datasets and raw data
+datasets/
+datasets/raw_data/
+
+# Scripts not needed in production image
+scripts/manual_data_loading/
+scripts/create_tables.py
+testing/
+
+# Flask frontend not used (React preferred)
+static/
+templates/
+
+# Ignore local env files with secrets
+.env
+*.env
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE folders
+.vscode/
+.idea/
+*.swp

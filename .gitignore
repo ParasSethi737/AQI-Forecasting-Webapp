@@ -7,7 +7,9 @@ scripts/.ipynb_checkpoints
 
 .env
 
+aqi_backend_venv/
 testing/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

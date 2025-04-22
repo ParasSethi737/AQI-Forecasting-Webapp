@@ -1,0 +1,143 @@
+/* General table styling */
+.table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1.5px solid #333;
+    border-radius: 10px;
+    padding: 0.5rem;
+    background-color: #1e293b; /* Darker background */
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-family: Arial, sans-serif;
+  }
+  
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: #334155; /* Darker header background */
+    color: #facc15; /* Yellow text */
+    padding: 0.5rem;
+    border: 1px solid #444;
+  }
+  
+  tbody tr:nth-child(even) {
+    background-color: #2d3748; /* Slightly lighter row background */
+  }
+  
+  tbody tr:hover {
+    background-color: #475569; /* Highlight on hover */
+  }
+  
+  td, th {
+    padding: 0.5rem;
+    border: 1px solid #444;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: #e2e8f0; /* Light text */
+  }
+  
+  /* Highlight selected column */
+  .highlight-column td:nth-child(var(--highlight-column)) {
+    background-color: #475569; /* Darker highlight for selected column */
+    color: #facc15; /* Yellow text for highlighted column */
+    font-weight: bold;
+  }
+  
+/* Styling for the controls container */
+.controls-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Space between elements */
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center; /* Vertically center all elements */
+    background-color: #1e293b; /* Darker background */
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+  }
+  
+  /* Styling for labels and inputs */
+  .controls-container label {
+    display: flex;
+    flex-direction: column;
+    color: #e2e8f0; /* Light text */
+    font-size: 0.9rem;
+    font-weight: bold;
+    flex: 1; /* Allow labels to take equal space */
+    min-width: 150px; /* Prevent labels from shrinking too much */
+  }
+  
+  .controls-container input,
+  .controls-container select,
+  .controls-container button {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: #2d3748; /* Slightly lighter background */
+    color: #e2e8f0; /* Light text */
+    font-size: 0.9rem;
+    font-family: Arial, sans-serif;
+  }
+  
+  .controls-container input:focus,
+  .controls-container select:focus,
+  .controls-container button:focus {
+    outline: none;
+    border-color: #facc15; /* Yellow border on focus */
+    box-shadow: 0 0 5px #facc15;
+  }
+  
+  /* Styling for the fetch button */
+.controls-container button {
+    color: #facc15; /* Yellow text */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: center; /* Center the button vertically */
+    margin: 0 auto; /* Center the button horizontally */
+    margin-top: 1.8rem;
+    font-size: 1rem;
+}
+  
+  .controls-container button:hover {
+    background-color: #334155; /* Slightly lighter on hover */
+  }
+  
+  /* Responsive layout for smaller screens */
+  @media (max-width: 768px) {
+    .controls-container {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  
+    .controls-container label {
+      width: 100%;
+    }
+  
+    .controls-container input,
+    .controls-container select,
+    .controls-container button {
+      width: 100%;
+    }
+  }
+
+  /* Color data dynamically */
+  td[data-value="high"] {
+    color: #ef4444; /* Red for high values */
+    font-weight: bold;
+  }
+  
+  td[data-value="medium"] {
+    color: #f59e0b; /* Orange for medium values */
+  }
+  
+  td[data-value="low"] {
+    color: #10b981; /* Green for low values */
+  }

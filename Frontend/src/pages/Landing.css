@@ -1,0 +1,89 @@
+a:hover {
+    color: black;
+}
+.landing-page-container {
+    padding: 40px 20px;
+    max-width: 960px;
+    margin: auto;
+    color: #dddddd;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+  }
+  
+  .main-title {
+    font-size: 2rem;
+    color: #facc15;
+    margin-bottom: 10px;
+  }
+  
+  .subtitle {
+    font-size: 1.1rem;
+    color: #bbbbbb;
+    margin-bottom: 40px;
+  }
+  
+  .card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .highlight-card {
+    background-color: #2a2a2a; /* lighter than before */
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    text-align: left;
+  }
+  
+  .highlight-card h2 {
+    color: #facc15;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+  }
+  
+  .highlight-card p,
+  .highlight-card li {
+    font-size: 1rem;
+    color: #dddddd;
+  }
+  
+  .highlight-card ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .highlight-card ul li {
+    margin-bottom: 8px;
+  }
+  
+  /* Style subheadings like "Frontend:", "Backend:" */
+  .highlight-card ul li strong {
+    color: #4ecdc4;
+  }
+  
+.cta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0px;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #facc15;
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.cta-button:hover {
+    transform: scale(1.05);
+}
