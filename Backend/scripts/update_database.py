@@ -3,35 +3,10 @@
 import os
 import sqlite3
 import pandas as pd
+from typing import List
 from datetime import datetime
 from .preprocess import preprocess_weather_data, preprocess_pollutant_data
-from typing import List
 
-def get_last_update_date_from_db():
-    try:
-        DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'aqi_forecast.db'))
-
-        if not os.path.exists(DB_PATH):
-            print("DB file not found at:", DB_PATH)
-            return None
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT MAX(date) FROM WeatherData")
-        result = cursor.fetchone()
-        conn.close()
-
-        if result and result[0]:
-            print(f"Last update date from DB: {result[0]}")
-            return result[0]
-        
-        print("No last update date found in the WeatherData table.")
-        return None
-
-    except Exception as e:
-        print(f"Error retrieving last update date: {e}")
-        return None
 
 def delete_existing_entries(conn, date_str: str, tables: List[str]):
     cursor = conn.cursor()
@@ -40,8 +15,11 @@ def delete_existing_entries(conn, date_str: str, tables: List[str]):
 
 
 def update_database(weather_df: pd.DataFrame, pollutant_df: pd.DataFrame):
-    DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'aqi_forecast.db'))
-    conn = sqlite3.connect(DB_PATH)
+    # Set the path to the SQLite database in persistent storage
+    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
+    
+    # Connect to the database
+    conn = sqlite3.connect(DATABASE_PATH)
 
     # 1. Preprocess new data
     weather_df = preprocess_weather_data(weather_df)
@@ -150,8 +128,11 @@ def update_database(weather_df: pd.DataFrame, pollutant_df: pd.DataFrame):
         conn.close()
 
 def append_aqi_forecast_to_db(forecast):
-    DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'aqi_forecast.db'))
-    conn = sqlite3.connect(DB_PATH)
+    # Set the path to the SQLite database in persistent storage
+    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
+    
+    # Connect to the database
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
     forecast_date = datetime.today().strftime('%Y-%m-%d')  # when the forecast was made
@@ -175,10 +156,11 @@ def append_aqi_forecast_to_db(forecast):
 
 def load_and_merge_data_from_csv():
     # Adjust the path to the datasets folder
-    datasets_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'datasets')
-    DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'aqi_forecast.db'))
+    # Set the path to the SQLite database in persistent storage
+    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
     
-    conn = sqlite3.connect(DB_PATH)
+    # Connect to the database
+    conn = sqlite3.connect(DATABASE_PATH)
 
     # Load weather data from CSV
     weather_csv_path = os.path.join(datasets_folder, 'weather_data.csv')

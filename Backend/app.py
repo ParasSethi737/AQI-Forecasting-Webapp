@@ -1,5 +1,6 @@
 #app.py
 
+import os
 import sqlite3
 import logging
 import numpy as np
@@ -24,15 +25,20 @@ def serve_react_app():
 @app.route('/api/get_evaluation_metrics', methods=['GET'])
 def get_evaluation_metrics():
     try:
-        # Connect to the SQLite database using context manager
-        with sqlite3.connect('aqi_forecast.db') as conn:
-            # Query to get the evaluation metrics
-            query = """
-                SELECT * FROM ModelEvaluation
-                ORDER BY timestamp DESC
-                LIMIT 1
-            """
-            df = pd.read_sql_query(query, conn)
+        # Set the path to the SQLite database in persistent storage
+        DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
+        
+        # Connect to the database
+        conn = sqlite3.connect(DATABASE_PATH)
+        
+        # Query to get the evaluation metrics
+        query = """
+            SELECT * FROM ModelEvaluation
+            ORDER BY timestamp DESC
+            LIMIT 1
+        """
+        
+        df = pd.read_sql_query(query, conn)
 
         # If the dataframe is empty, return a message indicating no metrics
         if df.empty:
@@ -84,7 +90,11 @@ def fetch_current_data():
 @app.route('/api/get_forecast', methods=['GET'])
 def get_forecast():
     try:
-        conn = sqlite3.connect('aqi_forecast.db')
+        # Set the path to the SQLite database in persistent storage
+        DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
+        
+        # Connect to the database
+        conn = sqlite3.connect(DATABASE_PATH)
         
         # Step 1: Get the latest forecast_date
         latest_forecast_date_query = """
@@ -140,8 +150,12 @@ def view_data(table_name):
         if filters:
             query += " WHERE " + " AND ".join(filters)
 
+        # Set the path to the SQLite database in persistent storage
+        DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
+        
         # Connect to the database
-        conn = sqlite3.connect('aqi_forecast.db')
+        conn = sqlite3.connect(DATABASE_PATH)
+        
         df = pd.read_sql_query(query, conn)
         conn.close()
 

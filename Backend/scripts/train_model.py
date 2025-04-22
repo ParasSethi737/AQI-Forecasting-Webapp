@@ -1,20 +1,22 @@
 # train_model.py
 
-import pandas as pd
-import numpy as np
+import os
+import joblib
 import sqlite3
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error, mean_absolute_percentage_error
-from xgboost import XGBRegressor
-import joblib
-from pathlib import Path
 
 # Load the dataset from SQLite
 def load_data():
-    BASE_DIR = Path(__file__).resolve().parent.parent  # Root directory
-    DB_PATH = BASE_DIR / "aqi_forecast.db"
-
-    conn = sqlite3.connect(DB_PATH)
+    # Set the path to the SQLite database in persistent storage
+    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
+    
+    # Connect to the database
+    conn = sqlite3.connect(DATABASE_PATH)
     query = "SELECT * FROM CleanedData"
     data = pd.read_sql(query, conn)
     conn.close()
@@ -97,10 +99,11 @@ def train_model():
     print(f"XGBoost - MAE: {mae:.4f}, R²: {r2:.4f}, RMSE: {rmse:.4f}, MAPE: {mape:.4f}")
 
     # Save the evaluation metrics to the database
-    BASE_DIR = Path(__file__).resolve().parent.parent  # Root directory
-    DB_PATH = BASE_DIR / "aqi_forecast.db"
+    # Set the path to the SQLite database in persistent storage
+    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
     
-    conn = sqlite3.connect(DB_PATH)
+    # Connect to the database
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO ModelEvaluation (timestamp, mae, r2, rmse, mape)
