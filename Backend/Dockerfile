@@ -1,4 +1,4 @@
-# ---- Stage 1: Builder ----
+# ---- Stage 1: Builder ----
     FROM python:3.11-slim AS builder
 
     # Prevent Python from writing .pyc files and buffering stdout/stderr
@@ -21,7 +21,7 @@
      && pip install --no-cache-dir --prefix=/install -r requirements.txt
     
     
-    # ---- Stage 2: Runtime ----
+    # ---- Stage 2: Runtime ----
     FROM python:3.11-slim
     
     ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -35,8 +35,16 @@
     # Copy application code
     COPY . .
     
+    # Ensure the persistent storage directory exists
+    RUN mkdir -p /app/data
+    
+    # Copy your SQLite database into the persistent storage directory
+    # Assuming your SQLite DB is in the root of your Backend/ directory
+    RUN cp /app/aqi_forecast.db /app/data/aqi_forecast.db
+    
     # Expose Flask port
     EXPOSE 5000
     
     # Run with Gunicorn
     CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+    
