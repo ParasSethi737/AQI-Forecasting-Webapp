@@ -9,6 +9,7 @@ def run_daily_tasks():
     """
     # Train the model
     train_model()
+    print("Model trained successfully!")
 
 if __name__ == "__main__":
     run_daily_tasks()

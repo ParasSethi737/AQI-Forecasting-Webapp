@@ -1,28 +1,29 @@
 # train_model.py
-
 import os
 import joblib
-import sqlite3
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from xgboost import XGBRegressor
+from sqlalchemy import create_engine
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error, mean_absolute_percentage_error
+from xgboost import XGBRegressor
 
-# Load the dataset from SQLite
+# Load the dataset from PostgreSQL
 def load_data():
-    # Set the path to the SQLite database in persistent storage
-    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
-    
-    # Connect to the database
-    conn = sqlite3.connect(DATABASE_PATH)
+    # Set the database URL (use environment variable or hardcoded URL for local development)
+    DATABASE_URL = os.getenv("DATABASE_URL")
+
+    # Create a connection to the PostgreSQL database
+    engine = create_engine(DATABASE_URL)
+
+    # SQL query to fetch the data
     query = "SELECT * FROM CleanedData"
-    data = pd.read_sql(query, conn)
-    conn.close()
+    data = pd.read_sql(query, engine)
+
+    # Close the connection
+    engine.dispose()
 
     data = data.drop(columns=['precip'], errors='ignore')
-
     return data
 
 # Feature Engineering Function
@@ -98,24 +99,35 @@ def train_model():
 
     print(f"XGBoost - MAE: {mae:.4f}, R²: {r2:.4f}, RMSE: {rmse:.4f}, MAPE: {mape:.4f}")
 
-    # Save the evaluation metrics to the database
-    # Set the path to the SQLite database in persistent storage
-    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
+    # Save the evaluation metrics to the database (PostgreSQL)
+    DATABASE_URL = os.getenv("DATABASE_URL")
     
-    # Connect to the database
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO ModelEvaluation (timestamp, mae, r2, rmse, mape)
-        VALUES (?, ?, ?, ?, ?)
-    """, (pd.Timestamp.now().isoformat(), mae, r2, rmse, mape))
-    conn.commit()
-    conn.close()
+    # Create connection to the PostgreSQL database
+    engine = create_engine(DATABASE_URL)
+    with engine.connect() as conn:
+        conn.execute("""
+            INSERT INTO ModelEvaluation (timestamp, mae, r2, rmse, mape)
+            VALUES (?, ?, ?, ?, ?)
+        """, (pd.Timestamp.now().isoformat(), mae, r2, rmse, mape))
+    
+    engine.dispose()
+
 
     # Save the trained model
-    model_path = r'C:\Codes\WebDev\AQI-Forecasting-Webapp\Backend\ML_models\xgboost_model.pkl'
+    # model_path = r'C:\Codes\WebDev\AQI-Forecasting-Webapp\Backend\ML_models\xgboost_model.pkl'
+    # Save the trained model to a relative path
+    # model_path = os.path.join(os.path.dirname(__file__), 'ML_models', 'xgboost_model.pkl')
+
+    # for render
+    model_path = '/app/data/xgboost_model.pkl'
+
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+
+    # Save the trained model
     joblib.dump(xgb_model, model_path)
     print(f"XGBoost model saved to {model_path}")
+
 
 if __name__ == '__main__':
     train_model()

@@ -1,25 +1,23 @@
-# update_database.py
-
 import os
-import sqlite3
+import psycopg2
 import pandas as pd
 from typing import List
 from datetime import datetime
+from sqlalchemy import create_engine
 from .preprocess import preprocess_weather_data, preprocess_pollutant_data
 
-
+# Function to delete existing entries in the specified tables
 def delete_existing_entries(conn, date_str: str, tables: List[str]):
     cursor = conn.cursor()
     for table in tables:
-        cursor.execute(f"DELETE FROM {table} WHERE date = ?", (date_str,))
+        cursor.execute(f"DELETE FROM {table} WHERE date = %s", (date_str,))
 
-
+# Function to update the database with new weather and pollutant data
 def update_database(weather_df: pd.DataFrame, pollutant_df: pd.DataFrame):
-    # Set the path to the SQLite database in persistent storage
-    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
-    
-    # Connect to the database
-    conn = sqlite3.connect(DATABASE_PATH)
+    # Connect to PostgreSQL (use DATABASE_URL from environment variables)
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(DATABASE_URL)
+    conn = engine.connect()
 
     # 1. Preprocess new data
     weather_df = preprocess_weather_data(weather_df)
@@ -35,16 +33,16 @@ def update_database(weather_df: pd.DataFrame, pollutant_df: pd.DataFrame):
     print("Pollutant DataFrame:")
     print(pollutant_df.head())
 
-    # 2. Get latest date (assumes all rows are for the same date)
+    # 2. Get the latest date (assumes all rows are for the same date)
     latest_date = weather_df['date'].max()
     latest_date_str = latest_date.strftime('%Y-%m-%d')  # Convert to string format
 
     # 3. Load existing data for that date
     existing_weather = pd.read_sql_query(
-        "SELECT * FROM WeatherData WHERE date = ?", conn, params=(latest_date_str,)
+        "SELECT * FROM WeatherData WHERE date = %s", conn, params=(latest_date_str,)
     )
     existing_pollutant = pd.read_sql_query(
-        "SELECT * FROM PollutantData WHERE date = ?", conn, params=(latest_date_str,)
+        "SELECT * FROM PollutantData WHERE date = %s", conn, params=(latest_date_str,)
     )
 
     # Ensure consistent date format in existing data
@@ -128,12 +126,10 @@ def update_database(weather_df: pd.DataFrame, pollutant_df: pd.DataFrame):
         conn.close()
 
 def append_aqi_forecast_to_db(forecast):
-    # Set the path to the SQLite database in persistent storage
-    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
-    
-    # Connect to the database
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
+    # Connect to PostgreSQL (use DATABASE_URL from environment variables)
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(DATABASE_URL)
+    conn = engine.connect()
 
     forecast_date = datetime.today().strftime('%Y-%m-%d')  # when the forecast was made
     model_name = 'XGBoost_V1'
@@ -141,9 +137,9 @@ def append_aqi_forecast_to_db(forecast):
 
     for predicted_date, predicted_aqi in forecast.items():
         # Upsert (insert or replace) based on forecast_date and predicted_date
-        cursor.execute('''
+        conn.execute('''
             INSERT INTO AQIForecast (forecast_date, predicted_date, predicted_aqi, model_name, location)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             ON CONFLICT(forecast_date, predicted_date) DO UPDATE SET
                 predicted_aqi=excluded.predicted_aqi,
                 model_name=excluded.model_name,
@@ -155,13 +151,13 @@ def append_aqi_forecast_to_db(forecast):
     print("Forecast data appended to AQIForecast table.")
 
 def load_and_merge_data_from_csv():
+    # Connect to PostgreSQL (use DATABASE_URL from environment variables)
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(DATABASE_URL)
+    conn = engine.connect()
+
     # Adjust the path to the datasets folder
     datasets_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'datasets')
-    # Set the path to the SQLite database in persistent storage
-    DATABASE_PATH = os.path.join('/app/data', 'aqi_forecast.db')
-    
-    # Connect to the database
-    conn = sqlite3.connect(DATABASE_PATH)
 
     # Load weather data from CSV
     weather_csv_path = os.path.join(datasets_folder, 'weather_data.csv')
@@ -208,6 +204,3 @@ def load_and_merge_data_from_csv():
     conn.commit()
     conn.close()
     print("Data from CSVs successfully loaded, merged, and saved to the database.")
-
-""" if __name__ == "__main__":
-    load_and_merge_data_from_csv() """
