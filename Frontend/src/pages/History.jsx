@@ -30,6 +30,8 @@ function History() {
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
+      console.log('API URL:', apiUrl); // Debugging: Log the API URL
+
       let url = `${apiUrl}/api/view-data/${tableName}`;
       if (startDate || endDate) {
         const params = new URLSearchParams();
@@ -38,11 +40,16 @@ function History() {
         url += `?${params.toString()}`;
       }
 
-      console.log('Request URL:', url);
+      console.log('Request URL:', url); // Debugging: Log the constructed request URL
 
       const response = await axios.get(url, { headers: { Accept: 'application/json' } });
+
+      console.log('Response Status:', response.status); // Debugging: Log the response status
+      console.log('Response Headers:', response.headers); // Debugging: Log the response headers
+
       if (response.headers['content-type']?.includes('application/json')) {
-        console.log('Raw data fetched from backend:', response.data); // Debugging log
+        console.log('Raw data fetched from backend:', response.data); // Debugging: Log the raw data
+
         let fetchedData = response.data;
 
         // Ensure fetchedData is an array
@@ -58,29 +65,33 @@ function History() {
           dateKey = 'timestamp';
         }
 
-        fetchedData = fetchedData.map((row) => {
+        // Process the fetched data
+        fetchedData = fetchedData.map((row, index) => {
           const { [dateKey]: dateValue, ...rest } = row;
           const formattedDate = dateValue
             ? new Date(dateValue).toISOString().split('T')[0]
             : 'N/A';
 
-            // Round all numerical values to 2 decimal places
-            const roundedRow = {};
-            for (const [key, value] of Object.entries(rest)) {
-              if (typeof value === 'number') {
-                roundedRow[key] = +value.toFixed(3);
-              } else {
-                roundedRow[key] = value;
-              }
+          console.log(`Row ${index} - Date: ${formattedDate}, Data:`, rest); // Debugging: Log individual row data
+
+          // Round all numerical values to 2 decimal places
+          const roundedRow = {};
+          for (const [key, value] of Object.entries(rest)) {
+            if (typeof value === 'number') {
+              roundedRow[key] = +value.toFixed(3);
+            } else {
+              roundedRow[key] = value;
             }
-            return {
-              date: formattedDate,
-              ...roundedRow,
-            };
+          }
+
+          return {
+            date: formattedDate,
+            ...roundedRow,
+          };
         });
 
         setData(fetchedData);
-        console.log('Processed data:', fetchedData); // Debugging log
+        console.log('Processed data:', fetchedData); // Debugging: Log the processed data
       } else {
         console.error('Unexpected response format:', response.data);
       }
@@ -174,7 +185,7 @@ function History() {
   return (
     <div style={{ padding: '1rem', maxWidth: '100%', overflow: 'hidden' }}>
       <h2 style={{ color: '#333', textAlign: 'center', marginBottom: '1rem' }}>Historical Data</h2>
-  
+
       <div className="controls-container">
         <label>
           Table:
@@ -187,17 +198,17 @@ function History() {
             <option value="model_evaluation">Model Evaluation Metrics</option>
           </select>
         </label>
-  
+
         <label>
           Start Date:
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </label>
-  
+
         <label>
           End Date:
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </label>
-  
+
         <label>
           Search:
           <input
@@ -207,7 +218,7 @@ function History() {
             placeholder="Search..."
           />
         </label>
-  
+
         <label>
           Filter by Column:
           <select value={selectedColumn} onChange={(e) => setSelectedColumn(e.target.value)}>
@@ -220,10 +231,10 @@ function History() {
               ))}
           </select>
         </label>
-  
+
         <button onClick={fetchData}>Fetch Data</button>
       </div>
-  
+
       <div className="table-container" style={{ '--highlight-column': selectedColumn ? Object.keys(data[0]).indexOf(selectedColumn) + 1 : 0 }}>
         {Array.isArray(data) && data.length > 0 ? (
           <table className={selectedColumn ? 'highlight-column' : ''}>
