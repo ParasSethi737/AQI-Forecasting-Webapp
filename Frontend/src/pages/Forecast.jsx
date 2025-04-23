@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   LineElement,
@@ -10,6 +8,9 @@ import {
   Legend,
 } from 'chart.js';
 import './Forecast.css';
+import axios from 'axios';
+import { Line } from 'react-chartjs-2';
+import React, { useEffect, useState } from 'react';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
@@ -19,17 +20,15 @@ function Forecast() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/get_forecast')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch forecast');
-        return res.json();
-      })
-      .then((data) => {
-        setForecastData(data);
+    const apiUrl = import.meta.env.VITE_API_URL; // Get the API URL from environment variables
+    
+    axios.get(`${apiUrl}/api/get_forecast`)
+      .then((response) => {
+        setForecastData(response.data);  // Axios automatically parses JSON for you
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Fetch error:', err);
+        console.error('Axios error:', err);
         setError(true);
         setLoading(false);
       });

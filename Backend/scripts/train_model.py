@@ -3,7 +3,7 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error, mean_absolute_percentage_error
 from xgboost import XGBRegressor
@@ -17,7 +17,7 @@ def load_data():
     engine = create_engine(DATABASE_URL)
 
     # SQL query to fetch the data
-    query = "SELECT * FROM CleanedData"
+    query = "SELECT * FROM cleaned_data"
     data = pd.read_sql(query, engine)
 
     # Close the connection
@@ -99,19 +99,34 @@ def train_model():
 
     print(f"XGBoost - MAE: {mae:.4f}, R²: {r2:.4f}, RMSE: {rmse:.4f}, MAPE: {mape:.4f}")
 
-    # Save the evaluation metrics to the database (PostgreSQL)
     DATABASE_URL = os.getenv("DATABASE_URL")
-    
-    # Create connection to the PostgreSQL database
     engine = create_engine(DATABASE_URL)
-    with engine.connect() as conn:
-        conn.execute("""
-            INSERT INTO ModelEvaluation (timestamp, mae, r2, rmse, mape)
-            VALUES (?, ?, ?, ?, ?)
-        """, (pd.Timestamp.now().isoformat(), mae, r2, rmse, mape))
-    
-    engine.dispose()
 
+    now = pd.Timestamp.now()
+
+    metrics_data = {
+        "timestamp": now.isoformat(),
+        "mae": round(float(mae), 4),
+        "r2": round(float(r2), 4),
+        "rmse": round(float(rmse), 4),
+        "mape": round(float(mape), 4),
+        "eval_date": now.date()  # Clean and direct!
+    }
+
+    with engine.begin() as conn:
+        conn.execute(
+            text("""
+                INSERT INTO model_evaluation (timestamp, eval_date, mae, r2, rmse, mape)
+                VALUES (:timestamp, :eval_date, :mae, :r2, :rmse, :mape)
+                ON CONFLICT (eval_date) DO UPDATE SET
+                    timestamp = EXCLUDED.timestamp,
+                    mae = EXCLUDED.mae,
+                    r2 = EXCLUDED.r2,
+                    rmse = EXCLUDED.rmse,
+                    mape = EXCLUDED.mape;
+            """),
+            metrics_data
+        )
 
     # Save the trained model
     # model_path = r'C:\Codes\WebDev\AQI-Forecasting-Webapp\Backend\ML_models\xgboost_model.pkl'

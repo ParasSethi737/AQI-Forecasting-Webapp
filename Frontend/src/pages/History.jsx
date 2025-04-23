@@ -4,7 +4,7 @@ import './History.css'; // Import the CSS file
 
 function History() {
   const [data, setData] = useState([]);
-  const [tableName, setTableName] = useState('AQIForecast');
+  const [tableName, setTableName] = useState('aqi_forecast'); // Default table name
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,8 +29,8 @@ function History() {
     }
 
     try {
-      console.log('Fetching data...');
-      let url = `http://localhost:5000/api/view-data/${tableName}`;
+      const apiUrl = import.meta.env.VITE_API_URL;
+      let url = `${apiUrl}/api/view-data/${tableName}`;
       if (startDate || endDate) {
         const params = new URLSearchParams();
         if (startDate) params.append('start_date', startDate);
@@ -51,17 +51,32 @@ function History() {
           fetchedData = []; // Fallback to an empty array
         }
 
-        const dateKey = tableName === 'AQIForecast' ? 'forecast_date' : 'date';
-        // Reorder columns and format the date/forecast_date
+        let dateKey = 'date';
+        if (tableName === 'aqi_forecast') {
+          dateKey = 'forecast_date';
+        } else if (tableName === 'model_evaluation') {
+          dateKey = 'timestamp';
+        }
+
         fetchedData = fetchedData.map((row) => {
           const { [dateKey]: dateValue, ...rest } = row;
           const formattedDate = dateValue
-            ? dateValue.split(' ')[0]
+            ? new Date(dateValue).toISOString().split('T')[0]
             : 'N/A';
-          return {
-            date: formattedDate, // Add the formatted date as the first column
-            ...rest, // Spread the remaining columns
-          };
+
+            // Round all numerical values to 2 decimal places
+            const roundedRow = {};
+            for (const [key, value] of Object.entries(rest)) {
+              if (typeof value === 'number') {
+                roundedRow[key] = +value.toFixed(3);
+              } else {
+                roundedRow[key] = value;
+              }
+            }
+            return {
+              date: formattedDate,
+              ...roundedRow,
+            };
         });
 
         setData(fetchedData);
@@ -112,6 +127,7 @@ function History() {
     temp: 'Temperature (°C)',
     tempmax: 'Max Temperature (°C)',
     tempmin: 'Min Temperature (°C)',
+    timestamp: 'Timestamp',
     icon: 'Weather Icon',
     moonphase: 'Moon Phase',
     name: 'Location Name',
@@ -137,6 +153,10 @@ function History() {
     predicted_aqi: 'Predicted AQI',
     model_name: 'Model Name',
     location: 'Location',
+    mae: 'Mean Absolute Error',
+    rmse: 'Root Mean Square Error',
+    mape: 'Mean Absolute Percentage Error',
+    r2: 'R² Score',
   };
 
   const predefinedColumnOrder = [
@@ -147,7 +167,8 @@ function History() {
     'dew', 'humidity', 'precip', 'precipprob', 'precipcover', 'preciptype', 'snow', 'snowdepth',
     'windgust', 'windspeed', 'winddir', 'sealevelpressure', 'cloudcover', 'visibility',
     'solarradiation', 'solarenergy', 'uvindex', 'severerisk', 'sunrise', 'sunset',
-    'moonphase', 'conditions', 'description', 'icon', 'stations'
+    'moonphase', 'conditions', 'description', 'icon', 'stations',
+    'timestamp', 'mae', 'rmse', 'mape', 'r2',
   ];
 
   return (
@@ -158,11 +179,12 @@ function History() {
         <label>
           Table:
           <select value={tableName} onChange={(e) => setTableName(e.target.value)}>
-            <option value="AQIForecast">AQIForecast</option>
-            <option value="RawData">RawData</option>
-            <option value="CleanedData">CleanedData</option>
-            <option value="WeatherData">WeatherData</option>
-            <option value="PollutantData">PollutantData</option>
+            <option value="aqi_forecast">AQI Forecast</option>
+            <option value="raw_data">Raw Data</option>
+            <option value="cleaned_data">Cleaned Data</option>
+            <option value="weather_data">Weather Data</option>
+            <option value="pollutant_data">Pollutant Data</option>
+            <option value="model_evaluation">Model Evaluation Metrics</option>
           </select>
         </label>
   

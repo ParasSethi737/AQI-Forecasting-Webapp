@@ -68,7 +68,7 @@ def get_evaluation_metrics():
         # Connect to PostgreSQL database using SQLAlchemy
         with engine.connect() as conn:
             query = """
-                SELECT * FROM ModelEvaluation
+                SELECT * FROM model_evaluation
                 ORDER BY timestamp DESC
                 LIMIT 1
             """
@@ -120,13 +120,13 @@ def get_forecast():
         # Connect to PostgreSQL database using SQLAlchemy
         with engine.connect() as conn:
             latest_forecast_date_query = """
-                SELECT MAX(forecast_date) AS latest_forecast_date FROM AQIForecast
+                SELECT MAX(forecast_date) AS latest_forecast_date FROM aqi_forecast
             """
             latest_date_df = pd.read_sql_query(latest_forecast_date_query, conn)
             latest_forecast_date = latest_date_df["latest_forecast_date"].iloc[0]
 
             forecast_query = f"""
-                SELECT * FROM AQIForecast
+                SELECT * FROM aqi_forecast
                 WHERE forecast_date = '{latest_forecast_date}'
                 ORDER BY predicted_date ASC
             """
@@ -146,12 +146,19 @@ def get_forecast():
 @app.route('/api/view-data/<table_name>', methods=['GET'])
 def view_data(table_name):
     try:
-        allowed_tables = ['RawData', 'CleanedData', 'WeatherData', 'PollutantData', 'AQIForecast']
+        allowed_tables = ['raw_data', 'cleaned_data', 'weather_data', 'pollutant_data', 'aqi_forecast', 'model_evaluation']
 
         if table_name not in allowed_tables:
             return jsonify({"error": f"Table '{table_name}' is not allowed to be viewed."}), 400
 
-        date_column = 'forecast_date' if table_name == 'AQIForecast' else 'date'
+        # Determine the correct column for filtering based on table
+        if table_name == 'aqi_forecast':
+            date_column = 'forecast_date'
+        elif table_name == 'model_evaluation':
+            date_column = 'timestamp'
+        else:
+            date_column = 'date'
+
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
 
@@ -179,13 +186,13 @@ def view_data(table_name):
             'dew', 'humidity', 'precip', 'precipprob', 'precipcover', 'preciptype', 'snow', 'snowdepth',
             'windgust', 'windspeed', 'winddir', 'sealevelpressure', 'cloudcover', 'visibility', 'solarradiation',
             'solarenergy', 'uvindex', 'severerisk', 'sunrise', 'sunset', 'moonphase', 'conditions', 'description',
-            'icon', 'stations'
+            'icon', 'stations', 'timestamp', 'mae', 'rmse', 'mape', 'r2'
         ]
 
         column_order = [col.strip().lower() for col in column_order]
         existing_columns = [col for col in column_order if col in df.columns]
         df = df[existing_columns]
-
+        df = df.sort_values(by=date_column, ascending=True) 
         df = df.replace({np.nan: None})
         return jsonify(df.to_dict(orient='records'))
 

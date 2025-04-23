@@ -16,7 +16,7 @@ sqlite_conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), "../../aqi
 pg_engine = create_engine(DATABASE_URL)
 
 # List of tables to migrate
-tables = ['WeatherData', 'PollutantData', 'RawData', 'CleanedData', 'AQIForecast', 'ModelEvaluation']
+tables = ['weather_data', 'pollutant_data', 'raw_data', 'cleaned_data', 'aqi_forecast', 'model_evaluation']
 
 # Migrate each table
 for table in tables:

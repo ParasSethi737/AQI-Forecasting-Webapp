@@ -8,7 +8,9 @@ function LandingPage() {
     useEffect(() => {
         async function fetchEvaluationMetrics() {
             try {
-                const response = await axios.get('http://localhost:5000/api/get_evaluation_metrics');
+                const apiUrl = import.meta.env.VITE_API_URL;
+                
+                const response = await axios.get(`${apiUrl}/api/get_evaluation_metrics`);
                 console.log('Evaluation metrics:', response.data);
                 const metrics = response.data.data[0]; 
                 setEvaluationMetrics({

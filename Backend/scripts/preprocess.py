@@ -60,9 +60,9 @@ def preprocess_weather_data(df):
     df = df.drop(columns=['datetime'], errors='ignore')
     df = df.sort_values('date').drop_duplicates(subset='date')
     
-    # Convert object columns to inferred types  //
-    df = df.infer_objects(copy=False)
-
-    df = df.interpolate(method='linear').fillna(method='bfill')
+    # Convert object columns to inferred types  
+    df = df.infer_objects()
+    df = df.interpolate(method='linear').bfill()  # This would replace the deprecated `fillna`
+    
     df['date'] = df['date'].dt.strftime('%Y-%m-%d')
     return df
