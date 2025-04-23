@@ -29,10 +29,7 @@ function History() {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      console.log('API URL:', apiUrl); // Debugging: Log the API URL
-
-      let url = `${apiUrl}/api/view-data/${tableName}`;
+      let url = `https://aqi-forecasting-webapp-1.onrender.com/api/view-data/${tableName}`;
       if (startDate || endDate) {
         const params = new URLSearchParams();
         if (startDate) params.append('start_date', startDate);

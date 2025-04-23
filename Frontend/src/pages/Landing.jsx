@@ -8,9 +8,7 @@ function LandingPage() {
     useEffect(() => {
         async function fetchEvaluationMetrics() {
             try {
-                const apiUrl = import.meta.env.VITE_API_URL;
-                
-                const response = await axios.get(`${apiUrl}/api/get_evaluation_metrics`);
+                const response = await axios.get(`https://aqi-forecasting-webapp-1.onrender.com/api/get_evaluation_metrics`);
                 console.log('Evaluation metrics:', response.data);
                 const metrics = response.data.data[0]; 
                 setEvaluationMetrics({

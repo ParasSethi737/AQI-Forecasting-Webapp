@@ -20,9 +20,7 @@ function Forecast() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL; // Get the API URL from environment variables
-    
-    axios.get(`${apiUrl}/api/get_forecast`)
+    axios.get(`https://aqi-forecasting-webapp-1.onrender.com/api/get_forecast`)
       .then((response) => {
         setForecastData(response.data);  // Axios automatically parses JSON for you
         setLoading(false);

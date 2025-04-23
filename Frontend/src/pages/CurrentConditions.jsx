@@ -10,9 +10,7 @@ function CurrentConditions() {
 
   // Fetching data from the backend API
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL;
-
-    axios.get(`${apiUrl}/api/fetch_current_data`) 
+    axios.get(`https://aqi-forecasting-webapp-1.onrender.com/api/fetch_current_data`) 
       .then((response) => {
         setWeatherData(response.data.weather_data[0]);
         setPollutantData(response.data.pollutant_data[0]);
