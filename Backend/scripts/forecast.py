@@ -1,10 +1,11 @@
 # forecast.py
 
+import os
 import joblib
 import numpy as np
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta
-from scripts.train_model import load_data, engineer_additional_features, create_lag_features
+from scripts.train_model import load_data, engineer_additional_features, create_lag_features, train_model
 
 """ BASE_DIR = Path(__file__).resolve().parent.parent
 DATASETS_DIR = BASE_DIR / "ML_models"
@@ -15,7 +16,12 @@ MODEL_PATH = '/app/data/xgboost_model.pkl'
 
 def get_aqi_forecast():
     """Generates a forecast for the next 7 days using the latest data"""
-    
+
+    # Retrain the model if not found
+    if not os.path.exists(MODEL_PATH):
+        print("Model not found. Retraining...")
+        train_model()
+
     data = load_data()
     data = engineer_additional_features(data)
     data = create_lag_features(data)

@@ -34,7 +34,7 @@ def serve_react_app():
     return send_from_directory('../Frontend/dist', 'index.html')
 
 # Route to trigger hourly tasks directly
-@app.route('/api/run_hourly_tasks', methods=['GET'])
+@app.route('/api/run_hourly_tasks', methods=['POST'])
 def run_hourly_tasks():
     try:
         # Call the functions directly within the app
@@ -51,7 +51,7 @@ def run_hourly_tasks():
 
 
 # Route to trigger daily tasks directly
-@app.route('/api/run_daily_tasks', methods=['GET'])
+@app.route('/api/run_daily_tasks', methods=['POST'])
 def run_daily_tasks():
     try:
         # Call the function to train the model directly
@@ -201,4 +201,4 @@ def view_data(table_name):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
