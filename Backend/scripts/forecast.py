@@ -2,7 +2,7 @@
 
 import joblib
 import numpy as np
-from pathlib import Path
+from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta
 from scripts.train_model import load_data, engineer_additional_features, create_lag_features
 
@@ -40,7 +40,7 @@ def get_aqi_forecast():
         raise ValueError(f"Expected 7 predictions, got {len(predictions)}: {predictions}")
 
     # Convert to JSON-safe dict
-    start_date = datetime.today()
+    start_date = datetime.now(ZoneInfo("Asia/Kolkata"))
     forecast = {
         (start_date + timedelta(days=i + 1)).strftime('%Y-%m-%d'): float(np.round(predictions[i], 2))
         for i in range(7)

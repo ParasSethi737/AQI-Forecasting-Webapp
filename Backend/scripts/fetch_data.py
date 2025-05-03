@@ -3,6 +3,7 @@
 import os
 import requests
 import pandas as pd
+from zoneinfo import ZoneInfo
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -14,7 +15,7 @@ def fetch_data_from_apis(from_date=None):
     STATION = "@10124"
     LOCATION = "INDIRA GANDHI INTERNATIONAL, IN"
 
-    today = datetime.today().strftime('%Y-%m-%d')
+    today = datetime.now(ZoneInfo("Asia/Kolkata")).strftime('%Y-%m-%d')
     from_date = from_date or today
     to_date = today
 
