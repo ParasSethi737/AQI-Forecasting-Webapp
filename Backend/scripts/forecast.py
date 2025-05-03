@@ -3,7 +3,7 @@
 import os
 import joblib
 import numpy as np
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo # for timezone handling
 from datetime import datetime, timedelta
 from scripts.train_model import load_data, engineer_additional_features, create_lag_features, train_model
 
@@ -46,7 +46,7 @@ def get_aqi_forecast():
         raise ValueError(f"Expected 7 predictions, got {len(predictions)}: {predictions}")
 
     # Convert to JSON-safe dict
-    start_date = datetime.now(ZoneInfo("Asia/Kolkata"))
+    start_date = datetime.now(ZoneInfo("Asia/Kolkata")) # IST timezone
     forecast = {
         (start_date + timedelta(days=i + 1)).strftime('%Y-%m-%d'): float(np.round(predictions[i], 2))
         for i in range(7)

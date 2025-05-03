@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from typing import List
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo # for timezone handling
 from sqlalchemy import create_engine, text
 from scripts.preprocess import preprocess_weather_data, preprocess_pollutant_data
 from dotenv import load_dotenv
@@ -123,7 +123,7 @@ def append_aqi_forecast_to_db(forecast):
     DATABASE_URL = os.getenv("DATABASE_URL")
     engine = create_engine(DATABASE_URL)
 
-    forecast_date = datetime.now(ZoneInfo("Asia/Kolkata")).strftime('%Y-%m-%d')
+    forecast_date = datetime.now(ZoneInfo("Asia/Kolkata")).strftime('%Y-%m-%d') # IST timezone
     model_name = 'XGBoost_V1'
     location = 'Delhi'
 
