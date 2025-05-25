@@ -12,7 +12,6 @@ datasets/raw_data/
 
 # Scripts not needed in production image
 scripts/manual_data_loading/
-scripts/create_tables.py
 testing/
 
 # Flask frontend not used (React preferred)
