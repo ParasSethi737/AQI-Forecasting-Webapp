@@ -36,20 +36,24 @@ function LandingPage() {
                 <section className="highlight-card">
                     <h2>Project Overview</h2>
                     <p>
-                        This web application forecasts the Air Quality Index (AQI) in Delhi for the upcoming 7 days. It uses over <strong>10 years</strong> of historical data and real-time updates to ensure consistent and adaptive forecasting. Designed as a full-stack solution, the app includes a daily data pipeline, automated retraining, and a dynamic user interface.
+                        This web application forecasts the Air Quality Index (AQI) in Delhi for the upcoming 7 days.
+                         It uses over <strong>10 years</strong> of historical data and real-time updates to ensure consistent and adaptive forecasting.
+                          Designed as a full-stack solution, the app includes a daily data pipeline, automated retraining, and a dynamic user interface.
                     </p>
                 </section>
 
                 <section className="highlight-card">
                     <h2>Model Design & Training</h2>
                     <p>
-                        My forecasting Model is <strong>XGBoost</strong> — the best performer among models like Random Forest, LightGBM, and CatBoost — trained on <strong>10 years of historical pollutant and weather data</strong> for Delhi.
+                        My forecasting model is <strong>XGBoost</strong> — the best performer among models like Random Forest, LightGBM, and CatBoost — trained on <strong>10 years of historical pollutant and weather data</strong> for Delhi.
+                         Extensive exploratory data analysis (EDA) and correlation studies were conducted to understand the data and guide feature engineering. Features were thoughtfully engineered and rigorously tested to ensure robust and accurate predictions.
+                          The model was then carefully optimized using grid search. Missing data and outliers were handled meticulously during preprocessing. The model’s performance was validated using cross-validation and evaluated through metrics such as RMSE and R² to guarantee reliability.
                     </p>
                     {evaluationMetrics ? (
                         <ul>
-                            <li><strong>Forecast Window:</strong> 7-day AQI prediction</li>
-                            <li><strong>Feature Engineering:</strong> pollutant interactions, cumulative sums, seasonal indicators</li>
-                            <li><strong>Lag Features:</strong> Last 7 days of AQI for autoregression</li>
+                            <li><strong>Forecast Horizon:</strong> 7-day ahead AQI prediction</li>
+                            <li><strong>Feature Engineering:</strong> pollutant cumulative sums, interaction terms (e.g., PM2.5 × CO, temperature × humidity), seasonal indicators (summer/winter flags), and total pollution aggregation</li>
+                            <li><strong>Lag Features:</strong> AQI values from the previous 7 days to capture temporal dependencies via autoregression</li>
                             <li>
                             <strong>Latest Evaluation Metrics</strong> (
                                 <strong>Created at:</strong> {
@@ -81,7 +85,7 @@ function LandingPage() {
                     <h2>Tech Stack</h2>
                     <ul>
                         <li><strong style={{ color: '#4ecdc4' }}>Frontend:</strong> React.js, Chart.js for dynamic AQI visualization</li>
-                        <li><strong style={{ color: '#4ecdc4' }}>Backend:</strong> Flask (REST APIs), SQLite (lightweight DB)</li>
+                        <li><strong style={{ color: '#4ecdc4' }}>Backend:</strong> Flask (REST APIs), PostgreSQL</li>
                         <li><strong style={{ color: '#4ecdc4' }}>Machine Learning:</strong> XGBoost, Scikit-learn, Pandas, NumPy</li>
                         <li><strong style={{ color: '#4ecdc4' }}>DevOps:</strong> Docker, GitHub Actions for CI/CD and automated retraining</li>
                     </ul>
@@ -92,8 +96,8 @@ function LandingPage() {
                     <ul>
                         <li><strong>Pollutant Data:</strong> Sourced from the <a href="https://waqi.info" target="_blank" rel="noopener noreferrer">World Air Quality Index (WAQI)</a></li>
                         <li><strong>Weather Data:</strong> Pulled via <a href="https://www.visualcrossing.com/" target="_blank" rel="noopener noreferrer">Visual Crossing API</a></li>
-                        <li><strong>Pipeline:</strong> Hourly data fetch → Cleaning → Feature Engineering → DB Storage</li>
-                        <li><strong>Forecast Generation:</strong> Daily retraining → Prediction → API push to UI</li>
+                        <li><strong>Pipeline:</strong> Hourly data fetching → Data cleaning → Feature engineering → Database storage</li>
+                        <li><strong>Forecast Generation:</strong> Daily model retraining → Hourly forecast updates</li>
                     </ul>
                 </section>
 

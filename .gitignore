@@ -10,6 +10,19 @@ scripts/.ipynb_checkpoints
 aqi_backend_venv/
 testing/
 
+# Ignore datasets
+/Backend/datasets/
+
+# Ignore SQLite DB files
+*.db
+
+# Ignore Flask static and templates folders
+/Backend/static/
+/Backend/templates/
+
+# Ignore manual data loading scripts
+/Backend/scripts/manual_data_loading/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
